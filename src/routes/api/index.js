@@ -59,6 +59,7 @@ router.post('/orders/:orderNumber/cancel', requireAuth, orders.cancelMine);
 // Admin
 router.get('/admin/stats', requireAdmin, orders.adminStats);
 router.get('/admin/orders', requireAdmin, orders.adminList);
+router.get('/admin/orders/export', requireAuth, orders.adminExport);
 router.patch('/admin/orders/:orderNumber/status', requireAdmin, orders.adminUpdateStatus);
 
 router.use((req, _res, next) =>
