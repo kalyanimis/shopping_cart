@@ -52,6 +52,29 @@ async function adminList(req, res) {
   });
 }
 
+const CSV_HEADER = 'Order,Placed at,Customer,Email,Items,Payment,Status,Total';
+
+async function adminExport(req, res) {
+  const { q } = pageQuerySchema.parse(req.query);
+  const status = ORDER_STATUSES.includes(req.query.status) ? req.query.status : '';
+  const orders = await orderService.exportOrders({ q, status });
+  const rows = orders.map((o) =>
+    [
+      o.orderNumber,
+      o.createdAt.toISOString(),
+      o.customer.name,
+      o.customer.email,
+      o.items.length,
+      o.payment.method,
+      o.status,
+      o.amounts.total,
+    ].join(',')
+  );
+  res.set('Content-Type', 'text/csv; charset=utf-8');
+  res.set('Content-Disposition', 'attachment; filename="orders.csv"');
+  res.send([CSV_HEADER, ...rows].join('\n'));
+}
+
 async function adminUpdateStatus(req, res) {
   const { status, note } = parseOrThrow(orderStatusSchema, req.body);
   const order = await orderService.changeStatus(req.params.orderNumber, status, {
@@ -89,6 +112,7 @@ module.exports = {
   getMine,
   cancelMine,
   adminList,
+  adminExport,
   adminUpdateStatus,
   adminStats,
 };

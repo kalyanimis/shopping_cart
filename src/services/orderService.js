@@ -259,6 +259,17 @@ async function listAllOrders({ status = '', q = '', page = 1, limit = 20 } = {})
   };
 }
 
+/** Every order matching the admin filters, newest first, for the CSV export. */
+async function exportOrders({ status = '', q = '' } = {}) {
+  const filter = {};
+  if (status && ORDER_STATUSES.includes(status)) filter.status = status;
+  if (q) {
+    const rx = new RegExp(escapeRegex(q.trim()), 'i');
+    filter.$or = [{ orderNumber: rx }, { 'customer.email': rx }, { 'customer.name': rx }];
+  }
+  return Order.find(filter).sort({ createdAt: -1 }).lean();
+}
+
 module.exports = {
   nextInvoiceNumber,
   placeOrder,
@@ -268,4 +279,5 @@ module.exports = {
   changeStatus,
   cancelByCustomer,
   listAllOrders,
+  exportOrders,
 };
