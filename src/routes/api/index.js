@@ -34,6 +34,7 @@ router.get('/auth/me', auth.me);
 router.get('/categories', catalog.listCategories);
 router.get('/brands', catalog.listBrands);
 router.get('/products', catalog.listProducts);
+router.get('/products/suggest', catalog.suggest);
 router.get('/products/:idOrSlug', catalog.getProduct);
 router.post('/products', requireAdmin, upload.single('image'), catalog.createProduct);
 router.patch('/products/:id', requireAdmin, upload.single('image'), catalog.updateProduct);
