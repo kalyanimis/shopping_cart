@@ -4,13 +4,18 @@ const cartService = require('../../services/cartService');
 const { addToCartSchema, updateCartItemSchema } = require('../../validators');
 const { parseOrThrow } = require('../../utils/validation');
 const serialize = require('../../utils/serializers');
+const ApiError = require('../../utils/ApiError');
+const { findCoupon, applyCoupon } = require('../../utils/coupons');
 
 const owner = (req) => cartService.ownerFromRequest(req);
 
 async function respond(req, res, cart, status = 200, extra = {}) {
   cartService.rememberGuestCart(req, cart);
-  const view = await cartService.buildView(cart);
-  res.status(status).json({ data: serialize.cart(view), ...extra });
+  const view = applyCoupon(await cartService.buildView(cart), req.session.coupon);
+  res.status(status).json({
+    data: { ...serialize.cart(view), discount: view.discount, coupon: view.coupon },
+    ...extra,
+  });
 }
 
 async function getCart(req, res) {
@@ -47,4 +52,28 @@ async function clearCart(req, res) {
   res.status(204).end();
 }
 
-module.exports = { getCart, addItem, updateItem, removeItem, clearCart };
+async function applyCouponCode(req, res) {
+  const code = req.body.code.trim();
+  if (!findCoupon(code)) {
+    throw ApiError.notFound('That coupon code is not valid.', 'COUPON_NOT_FOUND');
+  }
+  req.session.coupon = code;
+  const cart = await cartService.findCart(owner(req));
+  await respond(req, res, cart);
+}
+
+async function removeCouponCode(req, res) {
+  delete req.session.coupon;
+  const cart = await cartService.findCart(owner(req));
+  await respond(req, res, cart);
+}
+
+module.exports = {
+  getCart,
+  addItem,
+  updateItem,
+  removeItem,
+  clearCart,
+  applyCouponCode,
+  removeCouponCode,
+};

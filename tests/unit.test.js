@@ -1,6 +1,7 @@
 'use strict';
 
 const { calculateTotals, round2, formatPrice } = require('../src/utils/money');
+const { applyCoupon } = require('../src/utils/coupons');
 const { parseSearchIntent, parseAmount } = require('../src/services/catalogService');
 const { canTransition, isCancellableByCustomer } = require('../src/utils/orderStatus');
 const { slugify, safeRedirectPath, generateOrderNumber } = require('../src/utils/strings');
@@ -36,6 +37,11 @@ describe('money', () => {
 
   test('an empty cart costs nothing', () => {
     expect(calculateTotals([])).toMatchObject({ subtotal: 0, shipping: 0, total: 0, itemCount: 0 });
+  });
+
+  test('percentage coupons reduce the total', () => {
+    const totals = applyCoupon(calculateTotals([{ price: 1000, quantity: 2 }]), 'WELCOME10');
+    expect(totals).toMatchObject({ discount: 200, total: 1800, coupon: 'WELCOME10' });
   });
 
   test('formats prices in Indian rupees', () => {

@@ -49,6 +49,8 @@ router.post('/cart/items', cart.addItem);
 router.patch('/cart/items/:productId', cart.updateItem);
 router.delete('/cart/items/:productId', cart.removeItem);
 router.delete('/cart', cart.clearCart);
+router.post('/cart/coupon', cart.applyCouponCode);
+router.delete('/cart/coupon', cart.removeCouponCode);
 
 // Orders
 router.get('/orders', requireAuth, orders.listMine);
