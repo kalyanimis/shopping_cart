@@ -250,4 +250,22 @@ describe('Order history, cancellation and fulfilment', () => {
     expect(list.body.data).toHaveLength(1);
     expect(list.body.meta).toMatchObject({ average: 5, count: 1 });
   });
+
+  test('customers can delete their review', async () => {
+    const a = await customer();
+    await placeOrder(a, [['moon-swivel-accent-chair', 1]]);
+    const review = await a.send('post', '/api/v1/products/moon-swivel-accent-chair/reviews', {
+      rating: 2,
+      comment: 'Changed my mind about this one.',
+    });
+
+    const res = await a.send(
+      'delete',
+      `/api/v1/products/moon-swivel-accent-chair/reviews/${review.body.data.id}`
+    );
+    expect(res.status).toBe(204);
+
+    const list = await a.get('/api/v1/products/moon-swivel-accent-chair/reviews');
+    expect(list.body.data).toHaveLength(0);
+  });
 });

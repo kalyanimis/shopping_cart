@@ -102,6 +102,11 @@ async function upsertReview(req, res) {
   res.status(201).json({ data: serialize.review(review) });
 }
 
+async function deleteReview(req, res) {
+  await reviewService.deleteReview(req.params.reviewId);
+  res.status(204).end();
+}
+
 module.exports = {
   listProducts,
   getProduct,
@@ -112,4 +117,5 @@ module.exports = {
   archiveProduct,
   listReviews,
   upsertReview,
+  deleteReview,
 };

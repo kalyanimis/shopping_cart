@@ -42,6 +42,7 @@ router.delete('/products/:id', requireAdmin, catalog.archiveProduct);
 // Reviews
 router.get('/products/:idOrSlug/reviews', catalog.listReviews);
 router.post('/products/:idOrSlug/reviews', requireAuth, catalog.upsertReview);
+router.delete('/products/:idOrSlug/reviews/:reviewId', requireAuth, catalog.deleteReview);
 
 // Cart (works for guests and signed-in users)
 router.get('/cart', cart.getCart);
