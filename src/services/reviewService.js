@@ -44,4 +44,10 @@ async function upsertReview(user, productId, { rating, title = '', comment }) {
   return review;
 }
 
-module.exports = { listForProduct, hasPurchased, getUserReview, upsertReview };
+async function deleteReview(reviewId) {
+  const review = await Review.findByIdAndDelete(reviewId);
+  if (!review) throw ApiError.notFound('Review not found', 'REVIEW_NOT_FOUND');
+  return review;
+}
+
+module.exports = { listForProduct, hasPurchased, getUserReview, upsertReview, deleteReview };
