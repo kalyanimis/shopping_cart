@@ -3,7 +3,14 @@
 const { calculateTotals, round2, formatPrice } = require('../src/utils/money');
 const { parseSearchIntent, parseAmount } = require('../src/services/catalogService');
 const { canTransition, isCancellableByCustomer } = require('../src/utils/orderStatus');
-const { slugify, safeRedirectPath, generateOrderNumber } = require('../src/utils/strings');
+const {
+  slugify,
+  safeRedirectPath,
+  generateOrderNumber,
+  escapeRegex,
+  initials,
+  randomCode,
+} = require('../src/utils/strings');
 const { clean } = require('../src/middleware/sanitize');
 const { detectImageType } = require('../src/middleware/upload');
 const { niceCeil } = require('../src/services/adminService');
@@ -102,6 +109,24 @@ describe('utilities', () => {
     const a = generateOrderNumber(new Date('2026-01-02T00:00:00Z'));
     expect(a).toMatch(/^KRT-260102-[2-9A-HJ-NP-Z]{5}$/);
     expect(generateOrderNumber()).not.toBe(generateOrderNumber());
+  });
+
+  test('escapeRegex neutralises pattern metacharacters', () => {
+    const rx = new RegExp(escapeRegex('a.b*(c)'));
+    expect(rx.test('a.b*(c)')).toBe(true);
+    expect(rx.test('axb')).toBe(false);
+  });
+
+  test('initials uses the first two words', () => {
+    expect(initials('vivek reddy kumar')).toBe('VR');
+    expect(initials('  asha ')).toBe('A');
+    expect(initials('')).toBe('?');
+  });
+
+  test('randomCode avoids look-alike characters', () => {
+    const code = randomCode(200);
+    expect(code).toHaveLength(200);
+    expect(code).toMatch(/^[2-9A-HJKMNP-TV-Z]+$/);
   });
 
   test('sanitizer strips Mongo operators and prototype keys', () => {
