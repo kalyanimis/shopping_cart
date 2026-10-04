@@ -125,6 +125,15 @@ const and = (clauses) => {
   return { $and: list };
 };
 
+/** Type-ahead suggestions for the search box: products whose name or tags match. */
+async function suggestProducts(q, limit = 8) {
+  const rx = new RegExp(q, 'i');
+  return Product.find({ $or: [{ name: rx }, { tags: rx }] })
+    .select('name slug price')
+    .limit(limit)
+    .lean();
+}
+
 /* ───────────────────────── Caching ───────────────────────── */
 
 let navCache = { at: 0, data: null };
@@ -498,6 +507,7 @@ module.exports = {
   getNavCategories,
   invalidateCaches,
   listProducts,
+  suggestProducts,
   getProduct,
   getRelatedProducts,
   getHomepageData,

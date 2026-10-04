@@ -35,6 +35,16 @@ async function listProducts(req, res) {
   });
 }
 
+async function suggest(req, res) {
+  const q = String(req.query.q || '');
+  if (q.length < 2) return res.json({ data: [] });
+  const limit = Number(req.query.limit) || 8;
+  const items = await catalogService.suggestProducts(q, limit);
+  return res.json({
+    data: items.map((p) => ({ name: p.name, slug: p.slug, price: p.price })),
+  });
+}
+
 async function getProduct(req, res) {
   const product = await catalogService.getProduct(req.params.idOrSlug);
   res.json({ data: serialize.product(product, { detail: true }) });
@@ -104,6 +114,7 @@ async function upsertReview(req, res) {
 
 module.exports = {
   listProducts,
+  suggest,
   getProduct,
   listCategories,
   listBrands,
